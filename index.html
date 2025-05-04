@@ -6,7 +6,7 @@
     <title>Колонизация Марса</title>
     <style>
         body {
-            background: url('https://images.unsplash.com/photo-1451187580459-43490279c0fa') no-repeat center/cover;
+            background: url('https://images.unsplash.com/photo-1543722530-d9c3201373e9') no-repeat center/cover;
             color: #e8d5b7;
             font-family: Arial, sans-serif;
             text-align: center;
@@ -16,34 +16,6 @@
         h1 {
             color: #ff5733;
             text-shadow: 2px 2px #5c4033;
-        }
-        .tabs {
-            display: flex;
-            justify-content: center;
-            margin: 20px 0;
-        }
-        .tab {
-            background-color: #ff5733;
-            color: white;
-            padding: 10px 20px;
-            margin: 0 5px;
-            cursor: pointer;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-        }
-        .tab:hover, .tab.active {
-            background-color: #c70039;
-        }
-        .panel {
-            display: none;
-            background-color: rgba(92, 64, 51, 0.8);
-            padding: 20px;
-            border-radius: 10px;
-            margin: 20px auto;
-            max-width: 600px;
-        }
-        .panel.active {
-            display: block;
         }
         .resources {
             background-color: rgba(60, 47, 47, 0.8);
@@ -65,19 +37,16 @@
             background-color: #c70039;
             transform: scale(1.1);
         }
-        p {
-            margin: 10px 0;
+        .panel {
+            background-color: rgba(92, 64, 51, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px auto;
+            max-width: 600px;
         }
         #message {
             color: #ffcc00;
             font-weight: bold;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        .panel.active {
-            animation: fadeIn 0.5s;
         }
     </style>
 </head>
@@ -86,58 +55,42 @@
     <div class="resources">
         <p id="energy">Энергия: 1600</p>
         <p id="water">Вода: 0</p>
-        <p id="oxygen">Кислород: 0</p>
-        <p id="metal">Металл: 0</p>
-        <p id="coffee">Кофе: 0</p>
+        <p id="food">Еда: 0</p>
+        <p id="coffeeCups">Кружки кофе: 0</p>
     </div>
-    <div class="tabs">
-        <div class="tab active" onclick="showPanel('overview')">Обзор</div>
-        <div class="tab" onclick="showPanel('residential')">Жилой модуль</div>
-        <div class="tab" onclick="showPanel('mine')">Шахта</div>
-        <div class="tab" onclick="showPanel('solar')">Солнечная панель</div>
-        <div class="tab" onclick="showPanel('greenhouse')">Теплица</div>
-        <div class="tab" onclick="showPanel('tech')">Технологии</div>
-    </div>
-    <div id="overview" class="panel active">
-        <h2>Обзор базы</h2>
-        <p id="buildingCount">Здания: Жилых: 0, Шахт: 0, Панелей: 0</p>
-        <p id="oxygenStatus">Кислород: стабильно</p>
-    </div>
-    <div id="residential" class="panel">
+    <div class="panel" id="residential">
         <h2>Жилой модуль</h2>
-        <button onclick="buildBuilding('residential')">Построить жилой модуль (-200 энергии, -50 металла)</button>
-        <button onclick="brewCoffee()">Сварить кофе (-5 кофе, -10 воды)</button>
-        <p id="coffeeBonus">Бонус от кофе: нет</p>
+        <p id="resourcesList">Ресурсы: Энергия: 1600, Вода: 0, Еда: 0, Кружки кофе: 0, Обжаренные зёрна: 0, Грязный лёд: 0</p>
+        <button onclick="cookFood()">Приготовить еду</button>
+        <button onclick="brewCoffee()">Сварить кофе (-5 обжаренных зёрен)</button>
+        <button onclick="drinkCoffee()">Выпить кофе</button>
     </div>
-    <div id="mine" class="panel">
-        <h2>Шахта</h2>
-        <button onclick="buildBuilding('mine')">Построить шахту (-150 энергии, -30 металла)</button>
-        <p id="mineProduction">Производство металла: 0/мин</p>
-    </div>
-    <div id="solar" class="panel">
+    <div class="panel" id="solar">
         <h2>Солнечная панель</h2>
-        <button onclick="buildBuilding('solar')">Построить солнечную панель (-100 энергии, -20 металла)</button>
-        <p id="solarProduction">Производство энергии: 0/мин</p>
+        <button onclick="buildSolarPanel()">Построить солнечную панель (-100 энергии)</button>
+        <p id="electricity">Электричество: 0 кВт/ч</p>
     </div>
-    <div id="greenhouse" class="panel">
+    <div class="panel" id="greenhouse">
         <h2>Теплица</h2>
         <button onclick="plantCrop('potato')">Посадить картофель (-50 энергии, -10 воды, 60 сек)</button>
-        <button onclick="plantCrop('lettuce')">Посадить салат (-30 энергии, -5 воды, 30 сек)</button>
-        <button onclick="plantCrop('wheat')">Посадить пшеницу (-70 энергии, -15 воды, 90 сек)</button>
+        <button onclick="plantCrop('lettuce')">Посадить салат латук (-30 энергии, -5 воды, 15 мин)</button>
         <button onclick="plantCrop('coffee')">Посадить кофе (-60 энергии, -12 воды, 120 сек)</button>
         <p id="cropStatus">Теплица: нет активных культур</p>
+        <div id="progressBar" style="width: 100%; background: #ccc; height: 20px; display: none;">
+            <div id="progress" style="width: 0%; background: #4caf50; height: 100%;"></div>
+        </div>
     </div>
-    <div id="tech" class="panel">
-        <h2>Технологии</h2>
-        <button onclick="researchTech('greenhouse')">Улучшить теплицу (-100 металла, -50 воды)</button>
-        <button onclick="researchTech('mine')">Улучшить шахту (-150 металла, -50 энергии)</button>
-        <p id="techStatus">Улучшения: Теплица: 0, Шахта: 0</p>
+    <div class="panel" id="chemLab">
+        <h2>Хим Лаб</h2>
+        <button onclick="buildChemLab()">Построить Хим Лаб (-200 энергии)</button>
+        <button onclick="purifyIce()">Очистить грязный лёд (-1 грязный лёд)</button>
+    </div>
+    <div class="panel" id="collection">
+        <h2>Сбор ресурсов</h2>
+        <button onclick="collectResources()">Собрать ресурсы (раз в 1 мин)</button>
     </div>
     <p id="message"></p>
 
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
-
-
