@@ -81,7 +81,7 @@ const CROP_CONFIG = {
     lettuce: { name: 'Салат латук', time: 900, soil: 5, water: 10, stamina: 5, energy: 5, food: 10 },
     potato: { name: 'Картофель', time: 1200, soil: 6, water: 12, stamina: 6, energy: 6, food: 12 },
     carrot: { name: 'Морковь', time: 1500, soil: 7, water: 14, stamina: 7, energy: 7, food: 14 },
-    sunflower: { name: 'Подсолнечник', time: 300, soil: 4, water: 15, stamina: 4, energy: 4, food: 8 },
+    sunflower: { name: 'Подсолнечник', time: 300, soil: 4, water: 15, stamina: 4, energy: 4, coffeeBeans: 5 },
     rice: { name: 'Рис', time: 1800, soil: 8, water: 16, stamina: 8, energy: 8, food: 16 }
 };
 
@@ -317,8 +317,13 @@ function updateGame() {
     if (crop) {
         crop.timeLeft -= secondsPassed;
         if (crop.timeLeft <= 0) {
-            food += CROP_CONFIG[crop.type].food;
-            DOM.message.innerText = `${CROP_CONFIG[crop.type].name} собран! +${CROP_CONFIG[crop.type].food} еды`;
+            if (CROP_CONFIG[crop.type].food) {
+                food += CROP_CONFIG[crop.type].food;
+                DOM.message.innerText = `${CROP_CONFIG[crop.type].name} собран! +${CROP_CONFIG[crop.type].food} еды`;
+            } else if (CROP_CONFIG[crop.type].coffeeBeans) {
+                coffeeBeans += CROP_CONFIG[crop.type].coffeeBeans;
+                DOM.message.innerText = `${CROP_CONFIG[crop.type].name} собран! +${CROP_CONFIG[crop.type].coffeeBeans} кофейных зёрен`;
+            }
             crop = null;
         }
     }
@@ -334,7 +339,7 @@ function updateGame() {
 function checkResources(requirements) {
     for (const [resource, amount] of Object.entries(requirements)) {
         if (gameState[resource] < amount) {
-            DOM.message.innerText = `Недостаточно ${resource}!`;
+            DOM.message.innerText = `Недостаточно ${resource === 'scrapMetal' ? 'металлолома' : resource === 'coffeeBeans' ? 'кофейных зёрен' : resource}!`;
             return false;
         }
     }
@@ -359,14 +364,17 @@ function checkEnergy(amount) {
 function performAction(actionKey) {
     const config = ACTION_CONFIG[actionKey];
     const button = event.target;
+
     if (config.condition && !config.condition()) {
         DOM.message.innerText = `Требуется ${actionKey.includes('Chem') || actionKey === 'produceMetal' ? 'Хим Лаб' : 'C.A.D+'}!`;
         return;
     }
+
     if (config.cooldown && Date.now() - (actionKey === 'collectNormal' ? lastCollectionNormal : lastCollectionAdvanced) < config.cooldown) {
         DOM.message.innerText = `Сбор возможен раз в ${config.cooldown / 1000} сек!`;
         return;
     }
+
     if (checkResources(config.resources) && checkStamina(config.stamina) && checkEnergy(config.energy)) {
         for (const [resource, amount] of Object.entries(config.resources)) {
             gameState[resource] -= amount;
@@ -396,8 +404,6 @@ function plantCrop(type) {
         DOM.message.innerText = `${config.name} посажен!`;
         animateAction(button, 'particles');
         updateDisplay();
-    } else {
-        DOM.message.innerText = 'Недостаточно ресурсов!';
     }
 }
 
