@@ -1,30 +1,62 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
     <meta charset="UTF-8">
+    <title>Mars Colony Simulator</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mars Reborn Prototype</title>
-    <style>
-        body { font-family: Arial, sans-serif; text-align: center; margin-top: 20px; }
-        .resources { margin: 20px; font-size: 18px; }
-        button { margin: 10px; padding: 10px 20px; font-size: 16px; }
-        #message { color: red; font-weight: bold; }
-    </style>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
-    <h1>Mars Reborn Prototype</h1>
-    <div class="resources">
-        <p>Стамина: <span id="stamina">100</span></p>
-        <p>Еда: <span id="food">100</span></p>
-        <p>Вода: <span id="water">100</span></p>
-        <p>Металлолом: <span id="scrapMetal">0</span></p>
-        <p>Энергия: <span id="energy">0</span></p>
-        <p>Солнечные панели: <span id="solarPanels">0</span></p>
+    <div id="game-container">
+        <div class="header">
+            <h1>🏠 Колония Марса</h1>
+            <div id="resources">
+                <div>⚡ Стамина: <span id="stamina">100</span></div>
+                <div>🍴 Еда: <span id="food">100</span></div>
+                <div>💧 Вода: <span id="water">100</span></div>
+                <div>🗑️ Мусор: <span id="trash">0</span></div>
+                <div>🧊 Лёд: <span id="ice">0</span></div>
+                <div>🌑 Реголит: <span id="regolith">0</span></div>
+                <div>💎 Кристаллы: <span id="crystals">10</span></div>
+            </div>
+        </div>
+
+        <div class="sections">
+            <!-- Жилой модуль -->
+            <div class="building">
+                <h3>🏠 Жилой модуль</h3>
+                <button onclick="rest()">💤 Отдыхать (+20 стамины, -10 еды/воды)</button>
+            </div>
+
+            <!-- Поиск ресурсов -->
+            <div class="building">
+                <h3>🔍 Поиск ресурсов</h3>
+                <button id="scavButton" onclick="scavenge()">🛠️ Исследовать окрестности</button>
+            </div>
+
+            <!-- Солнечная панель -->
+            <div class="building">
+                <h3>☀️ Солнечные панели <span id="panelsCount">0</span></h3>
+                <button onclick="buySolarPanel()">💎 Купить (5 кристаллов)</button>
+                <button onclick="chargeBatteries()">🔋 Зарядить батареи</button>
+            </div>
+
+            <!-- Гидропоника -->
+            <div class="building">
+                <h3>🧪 Гидропоническая теплица</h3>
+                <select id="plantSelect">
+                    <option value="lettuce">Салат Латук (💧10 ⚡15)</option>
+                    <option value="tomato">Томаты (💧15 ⚡20)</option>
+                    <option value="potato">Картофель (💧20 ⚡25)</option>
+                </select>
+                <button onclick="startGrowing()">🌱 Начать выращивание</button>
+                <div id="growingProgress"></div>
+            </div>
+        </div>
+
+        <div id="notifications"></div>
     </div>
-    <button onclick="collectResources('normal')">Обычный сбор (-3 стамины)</button>
-    <button onclick="collectResources('advanced')">Расширенный сбор (-10 стамины)</button>
-    <button onclick="buildSolarPanel()">Построить солнечную панель (-10 металлолома, -10 стамины)</button>
-    <p id="message"></p>
-    <script src="script.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
