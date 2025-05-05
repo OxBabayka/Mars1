@@ -3,259 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mars Reborn</title>
+    <title>Mars Reborn Prototype</title>
     <style>
-        body {
-            background: url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c') no-repeat center/cover;
-            color: #e8d5b7;
-            font-family: 'Arial', sans-serif;
-            text-align: center;
-            padding: 15px;
-            margin: 0;
-            overflow-x: hidden;
-        }
-        h1 {
-            color: #ff5733;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-            font-size: 2em;
-            margin: 10px 0;
-        }
-        .tabs {
-            display: flex;
-            justify-content: center;
-            margin: 10px 0;
-            flex-wrap: wrap;
-        }
-        .tab {
-            background-color: #ff5733;
-            color: white;
-            padding: 8px 16px;
-            margin: 4px;
-            cursor: pointer;
-            border-radius: 6px;
-            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
-            transition: background-color 0.3s, transform 0.2s;
-            font-size: 0.9em;
-        }
-        .tab:hover, .tab.active {
-            background-color: #c70039;
-            transform: translateY(-2px);
-        }
-        .panel {
-            display: none;
-            background-color: rgba(92, 64, 51, 0.85);
-            padding: 15px;
-            border-radius: 8px;
-            margin: 10px auto;
-            max-width: 500px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
-        }
-        .panel.active {
-            display: block;
-            animation: fadeIn 0.5s ease-in-out;
-        }
-        .resources {
-            background-color: rgba(60, 47, 47, 0.9);
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
-            font-size: 0.9em;
-        }
-        .resources table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        .resources td {
-            padding: 5px;
-            text-align: left;
-        }
-        button {
-            background-color: #ff5733;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            margin: 4px;
-            cursor: pointer;
-            border-radius: 6px;
-            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
-            transition: background-color 0.3s, transform 0.2s;
-            font-size: 0.9em;
-            position: relative;
-            overflow: hidden;
-        }
-        button:hover {
-            background-color: #c70039;
-            transform: scale(1.05);
-        }
-        button:active {
-            animation: buttonShake 0.3s;
-        }
-        p {
-            margin: 8px 0;
-            font-size: 0.9em;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-        }
-        #message {
-            color: #ffcc00;
-            font-weight: bold;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-            font-size: 1em;
-        }
-        .progress-bar {
-            width: 100%;
-            background: #4a3c31;
-            height: 20px;
-            border-radius: 5px;
-            overflow: hidden;
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
-        }
-        .progress {
-            height: 100%;
-            background: linear-gradient(to right, #4caf50, #8bc34a);
-            transition: width 0.3s ease-in-out;
-        }
-        .timer {
-            font-size: 0.8em;
-            color: #ffcc00;
-            margin: 4px 0;
-        }
-        /* Анимации */
-        .action-effect {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.5);
-            opacity: 0;
-            border-radius: 6px;
-            animation: flash 0.5s ease-out;
-        }
-        .particle {
-            position: absolute;
-            width: 6px;
-            height: 6px;
-            background: #ffcc00;
-            border-radius: 50%;
-            animation: particleBurst 0.7s ease-out;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes flash {
-            0% { opacity: 0.5; }
-            100% { opacity: 0; }
-        }
-        @keyframes particleBurst {
-            0% { transform: translate(0, 0) scale(1); opacity: 1; }
-            100% { transform: translate(calc(40px * (var(--x))), calc(40px * (var(--y)))) scale(0); opacity: 0; }
-        }
-        @keyframes buttonShake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-2px); }
-            75% { transform: translateX(2px); }
-        }
-        @media (max-width: 600px) {
-            body { padding: 10px; }
-            h1 { font-size: 1.8em; }
-            .tabs { flex-direction: column; }
-            .tab { margin: 4px 0; padding: 8px 16px; font-size: 0.8em; }
-            button { padding: 8px 16px; font-size: 0.8em; }
-            .panel { padding: 10px; max-width: 90%; }
-            .resources td { padding: 3px; font-size: 0.8em; }
-        }
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 20px; }
+        .resources { margin: 20px; font-size: 18px; }
+        button { margin: 10px; padding: 10px 20px; font-size: 16px; }
+        #message { color: red; font-weight: bold; }
     </style>
 </head>
 <body>
-    <h1>Mars Reborn</h1>
+    <h1>Mars Reborn Prototype</h1>
     <div class="resources">
-        <table>
-            <tr><td>Капаситор:</td><td id="capacitor">100 кВт/ч</td></tr>
-            <tr><td>Заряженные батареи:</td><td id="chargedBatteries">5</td></tr>
-            <tr><td>Разряженные батареи:</td><td id="dischargedBatteries">0</td></tr>
-            <tr><td>Стамина:</td><td id="stamina">100</td></tr>
-            <tr><td>Вода:</td><td id="water">100</td></tr>
-            <tr><td>Еда:</td><td id="food">100</td></tr>
-            <tr><td>Кружки кофе:</td><td id="coffeeCups">0</td></tr>
-            <tr><td>Лёд:</td><td id="ice">0</td></tr>
-            <tr><td>Реголит:</td><td id="regolith">0</td></tr>
-            <tr><td>Мусор:</td><td id="trash">0</td></tr>
-            <tr><td>Металлолом:</td><td id="scrapMetal">0</td></tr>
-            <tr><td>Металл:</td><td id="metal">0</td></tr>
-            <tr><td>Почва:</td><td id="soil">0</td></tr>
-            <tr><td>CO₂:</td><td id="co2">0</td></tr>
-            <tr><td>O₂:</td><td id="o2">0</td></tr>
-            <tr><td>H₂:</td><td id="h2">0</td></tr>
-            <tr><td>Кофейные зёрна:</td><td id="coffeeBeans">0</td></tr>
-        </table>
+        <p>Стамина: <span id="stamina">100</span></p>
+        <p>Еда: <span id="food">100</span></p>
+        <p>Вода: <span id="water">100</span></p>
+        <p>Металлолом: <span id="scrapMetal">0</span></p>
+        <p>Энергия: <span id="energy">0</span></p>
+        <p>Солнечные панели: <span id="solarPanels">0</span></p>
     </div>
-    <div class="tabs">
-        <div class="tab active" onclick="showPanel('residential')">Жилой модуль</div>
-        <div class="tab" onclick="showPanel('collection')">Сбор ресурсов</div>
-        <div class="tab" onclick="showPanel('solar')">Солнечная панель</div>
-        <div class="tab" onclick="showPanel('greenhouse')">Теплица</div>
-        <div class="tab" onclick="showPanel('chemLab')">Хим Лаб</div>
-        <div class="tab" onclick="showPanel('cad')">C.A.D+</div>
-        <div class="tab" onclick="showReferral()">Рефералы</div>
-    </div>
-    <div id="residential" class="panel active">
-        <h2>Жилой модуль</h2>
-        <button onclick="cookFood()">Приготовить еду (-1 кофейные зёрна, -5 стамины, -2 кВт/ч)</button>
-        <button onclick="brewCoffee()">Сварить кофе (-5 кофейных зёрен, -5 стамины, -3 кВт/ч)</button>
-        <button onclick="drinkCoffee()">Выпить кофе (-1 кружка, +10 стамины)</button>
-    </div>
-    <div id="collection" class="panel">
-        <h2>Сбор ресурсов</h2>
-        <button onclick="collectResources('normal')">Обычный сбор (-3 стамины, -1 кВт/ч, раз в 30 сек)</button>
-        <p class="timer" id="normalTimer">Готово</p>
-        <button onclick="collectResources('advanced')">Расширенный сбор (-10 стамины, -2 кВт/ч, раз в 60 сек)</button>
-        <p class="timer" id="advancedTimer">Готово</p>
-    </div>
-    <div id="solar" class="panel">
-        <h2>Солнечная панель</h2>
-        <button onclick="buildSolarPanel()">Построить солнечную панель (-10 металлолома, -10 стамины, -10 кВт/ч)</button>
-        <button onclick="chargeBattery()">Поставить батарею на зарядку (-1 разряженная батарея)</button>
-        <button onclick="useBattery()">Использовать батарею (+20 кВт/ч, -1 заряженная батарея)</button>
-        <p id="chargingStatus">Заряжающиеся батареи: 0</p>
-    </div>
-    <div id="greenhouse" class="panel">
-        <h2>Теплица</h2>
-        <button onclick="plantCrop('lettuce')">Посадить салат (-5 почвы, -10 воды, -5 стамины, -5 кВт/ч)</button>
-        <button onclick="plantCrop('potato')">Посадить картофель (-6 почвы, -12 воды, -6 стамины, -6 кВт/ч)</button>
-        <button onclick="plantCrop('carrot')">Посадить морковь (-7 почвы, -14 воды, -7 стамины, -7 кВт/ч)</button>
-        <button onclick="plantCrop('sunflower')">Посадить подсолнечник (-4 почвы, -15 воды, -4 стамины, -4 кВт/ч)</button>
-        <button onclick="plantCrop('rice')">Посадить рис (-8 почвы, -16 воды, -8 стамины, -8 кВт/ч)</button>
-        <p id="cropStatus">Теплица: нет активных культур</p>
-        <p id="cropInventory">Собрано: Кофейные зёрна: 0</p>
-        <div class="progress-bar" id="progressBar">
-            <div class="progress" id="progress" style="width: 0%;"></div>
-        </div>
-    </div>
-    <div id="chemLab" class="panel">
-        <h2>Хим Лаб</h2>
-        <button onclick="buildChemLab()">Построить Хим Лаб (-20 металлолома, -10 стамины, -15 кВт/ч)</button>
-        <button onclick="purifyIce()">Очистить лёд (-1 лёд, -5 стамины, -3 кВт/ч, +1 вода)</button>
-        <button onclick="processTrash()">Переработать мусор (-1 мусор, -5 стамины, -3 кВт/ч, +0.5 металлолома)</button>
-        <button onclick="produceMetal()">Произвести металл (-1 металлолом, -0.1 CO₂, -0.1 O₂, -5 стамины, -5 кВт/ч)</button>
-    </div>
-    <div id="cad" class="panel">
-        <h2>C.A.D+</h2>
-        <button onclick="buildCAD()">Построить C.A.D+ (-15 металлолома, -10 стамины, -12 кВт/ч)</button>
-        <button onclick="produceSoil()">Произвести почву (-1 реголит, -5 стамины, -4 кВт/ч, +0.5 почвы)</button>
-        <button onclick="extractGases()">Добыть газы (-1 реголит, -5 стамины, -4 кВт/ч, +0.2 CO₂, +0.2 O₂, +0.1 H₂)</button>
-    </div>
-    <div id="referral" class="panel">
-        <h2>Реферальная система</h2>
-        <p>Приглашайте друзей и получайте 10 воды за каждого нового колониста!</p>
-        <button onclick="generateReferralLink()">Сгенерировать реферальную ссылку</button>
-        <p id="referralLink"></p>
-    </div>
+    <button onclick="collectResources('normal')">Обычный сбор (-3 стамины)</button>
+    <button onclick="collectResources('advanced')">Расширенный сбор (-10 стамины)</button>
+    <button onclick="buildSolarPanel()">Построить солнечную панель (-10 металлолома, -10 стамины)</button>
     <p id="message"></p>
-
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
