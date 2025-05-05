@@ -5,7 +5,6 @@
     <title>Mars Colony Simulator</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
     <div id="game-container">
@@ -15,10 +14,9 @@
                 <div>⚡ Стамина: <span id="stamina">100</span></div>
                 <div>🍴 Еда: <span id="food">100</span></div>
                 <div>💧 Вода: <span id="water">100</span></div>
-                <div>🗑️ Мусор: <span id="trash">0</span></div>
+                <div>🗑️ Металлолом: <span id="trash">0</span></div>
                 <div>🧊 Лёд: <span id="ice">0</span></div>
                 <div>🌑 Реголит: <span id="regolith">0</span></div>
-                <div>💎 Кристаллы: <span id="crystals">10</span></div>
             </div>
         </div>
 
@@ -33,25 +31,6 @@
             <div class="building">
                 <h3>🔍 Поиск ресурсов</h3>
                 <button id="scavButton" onclick="scavenge()">🛠️ Исследовать окрестности</button>
-            </div>
-
-            <!-- Солнечная панель -->
-            <div class="building">
-                <h3>☀️ Солнечные панели <span id="panelsCount">0</span></h3>
-                <button onclick="buySolarPanel()">💎 Купить (5 кристаллов)</button>
-                <button onclick="chargeBatteries()">🔋 Зарядить батареи</button>
-            </div>
-
-            <!-- Гидропоника -->
-            <div class="building">
-                <h3>🧪 Гидропоническая теплица</h3>
-                <select id="plantSelect">
-                    <option value="lettuce">Салат Латук (💧10 ⚡15)</option>
-                    <option value="tomato">Томаты (💧15 ⚡20)</option>
-                    <option value="potato">Картофель (💧20 ⚡25)</option>
-                </select>
-                <button onclick="startGrowing()">🌱 Начать выращивание</button>
-                <div id="growingProgress"></div>
             </div>
         </div>
 
