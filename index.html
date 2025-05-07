@@ -1,41 +1,32 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Mars Colony Simulator</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
+    <title>Build on Europa</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div id="game-container">
-        <div class="header">
-            <h1>🏠 Колония Марса</h1>
-            <div id="resources">
-                <div>⚡ Стамина: <span id="stamina">100</span></div>
-                <div>🍴 Еда: <span id="food">100</span></div>
-                <div>💧 Вода: <span id="water">100</span></div>
-                <div>🗑️ Металлолом: <span id="trash">0</span></div>
-                <div>🧊 Лёд: <span id="ice">0</span></div>
-                <div>🌑 Реголит: <span id="regolith">0</span></div>
-            </div>
+        <h1>Build on Europa</h1>
+        <div id="map">
+            <div class="map-grid"></div>
         </div>
-
-        <div class="sections">
-            <!-- Жилой модуль -->
-            <div class="building">
-                <h3>🏠 Жилой модуль</h3>
-                <button onclick="rest()">💤 Отдыхать (+20 стамины, -10 еды/воды)</button>
-            </div>
-
-            <!-- Поиск ресурсов -->
-            <div class="building">
-                <h3>🔍 Поиск ресурсов</h3>
-                <button id="scavButton" onclick="scavenge()">🛠️ Исследовать окрестности</button>
-            </div>
+        <div id="resources">
+            <h2>Ресурсы</h2>
         </div>
-
+        <div id="residential-module">
+            <h2>Жилой модуль</h2>
+            <div id="stamina"></div>
+            <div id="food"></div>
+            <div id="water"></div>
+            <button id="explore-button">Исследовать поверхность</button>
+            <div id="explore-timer"></div>
+        </div>
         <div id="notifications"></div>
     </div>
-    <script src="app.js"></script>
+    <script src="game.js"></script>
+    <script src="ui.js"></script>
+    <script src="main.js"></script>
 </body>
 </html>
