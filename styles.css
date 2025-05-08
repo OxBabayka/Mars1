@@ -15,14 +15,9 @@ body {
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
 }
 
-h1 {
+h1, h2, h3 {
     text-align: center;
     color: #00d4ff;
-}
-
-h2 {
-    color: #00d4ff;
-    margin-bottom: 10px;
 }
 
 #player-profile {
@@ -35,6 +30,7 @@ h2 {
 #profile-info {
     display: flex;
     align-items: center;
+    justify-content: center;
     margin-bottom: 10px;
 }
 
@@ -47,11 +43,17 @@ h2 {
 
 #join-time, #time-spent {
     font-size: 14px;
+    text-align: center;
     margin-bottom: 5px;
 }
 
-#map {
+#map-container {
     margin-bottom: 20px;
+}
+
+#map {
+    display: flex;
+    justify-content: center;
 }
 
 .map-grid {
@@ -70,6 +72,10 @@ h2 {
 
 .map-cell:hover {
     background-color: #87ceeb;
+}
+
+#residential-module-cell {
+    background-color: #ffcc00; /* Жёлтый для жилого модуля */
 }
 
 #resources p, #residential-module p {
@@ -117,6 +123,7 @@ h2 {
     margin-top: 10px;
     font-size: 14px;
     color: #00d4ff;
+    text-align: center;
 }
 
 #notifications {
@@ -126,4 +133,5 @@ h2 {
     border-radius: 5px;
     min-height: 50px;
     white-space: pre-wrap;
+    text-align: center;
 }

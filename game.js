@@ -51,7 +51,12 @@ class Game {
         for (let i = 0; i < 100; i++) {
             const cell = document.createElement('div');
             cell.classList.add('map-cell');
-            cell.addEventListener('click', () => this.exploreCell(i));
+            if (i === 45) { // Центр для 10x10 сетки (индекс 45)
+                cell.id = 'residential-module-cell';
+                cell.title = 'Жилой модуль';
+            } else {
+                cell.addEventListener('click', () => this.exploreCell(i));
+            }
             mapGrid.appendChild(cell);
         }
     }
@@ -75,12 +80,36 @@ class Game {
         this.exploring = false;
         this.exploreStartTime = null;
         const resourcesFound = this.generateResources();
-        this.resources.scrapMetal += resourcesFound.scrapMetal;
-        this.resources.dirtyIce += resourcesFound.dirtyIce;
-        this.resources.regolith += resourcesFound.regolith;
-        this.resources.sand += resourcesFound.sand;
+        let foundMessage = 'Исследование завершено!\nПолучено:\n';
+        let hasResources = false;
+
+        if (resourcesFound.scrapMetal > 0) {
+            this.resources.scrapMetal += resourcesFound.scrapMetal;
+            foundMessage += `- Металлолом: ${resourcesFound.scrapMetal}\n`;
+            hasResources = true;
+        }
+        if (resourcesFound.dirtyIce > 0) {
+            this.resources.dirtyIce += resourcesFound.dirtyIce;
+            foundMessage += `- Грязный лёд: ${resourcesFound.dirtyIce}\n`;
+            hasResources = true;
+        }
+        if (resourcesFound.regolith > 0) {
+            this.resources.regolith += resourcesFound.regolith;
+            foundMessage += `- Реголит: ${resourcesFound.regolith}\n`;
+            hasResources = true;
+        }
+        if (resourcesFound.sand > 0) {
+            this.resources.sand += resourcesFound.sand;
+            foundMessage += `- Песок: ${resourcesFound.sand}\n`;
+            hasResources = true;
+        }
+
+        if (!hasResources) {
+            foundMessage += 'Ничего не найдено';
+        }
+
         this.updateUI();
-        this.notify(`Исследование завершено!\nПолучено:\n- Металлолом: ${resourcesFound.scrapMetal}\n- Грязный лёд: ${resourcesFound.dirtyIce}\n- Реголит: ${resourcesFound.regolith}\n- Песок: ${resourcesFound.sand}`);
+        this.notify(foundMessage);
     }
 
     generateResources() {
@@ -234,18 +263,20 @@ class Game {
         let userPhoto = 'https://via.placeholder.com/50';
         let joinTime = localStorage.getItem('joinTime');
 
-        // Проверка Telegram Web App
-        if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe) {
+        if (window.Telegram && window.Telegram.WebApp) {
+            window.Telegram.WebApp.ready();
             const user = window.Telegram.WebApp.initDataUnsafe.user;
             if (user) {
+                console.log('Telegram user data:', user); // Для отладки
                 userName = `${user.first_name} ${user.last_name || ''}`.trim();
                 userPhoto = user.photo_url || 'https://via.placeholder.com/50';
+            } else {
+                console.log('No user data available in Telegram');
             }
         } else {
-            console.log('Запуск вне Telegram: используется заглушка для профиля');
+            console.log('Not running in Telegram Web App');
         }
 
-        // Установка времени присоединения
         if (!joinTime) {
             joinTime = Date.now();
             localStorage.setItem('joinTime', joinTime);
@@ -254,7 +285,6 @@ class Game {
         }
         this.joinTime = joinTime;
 
-        // Обновление UI профиля
         const profileInfo = document.getElementById('profile-info');
         profileInfo.innerHTML = `
             <img src="${userPhoto}" alt="Profile Photo">
