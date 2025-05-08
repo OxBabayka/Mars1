@@ -230,28 +230,38 @@ class Game {
     }
 
     initPlayerProfile() {
-        if (window.Telegram && window.Telegram.WebApp) {
+        let userName = 'Неизвестный игрок';
+        let userPhoto = 'https://via.placeholder.com/50';
+        let joinTime = localStorage.getItem('joinTime');
+
+        // Проверка Telegram Web App
+        if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe) {
             const user = window.Telegram.WebApp.initDataUnsafe.user;
             if (user) {
-                const profileInfo = document.getElementById('profile-info');
-                profileInfo.innerHTML = `
-                    <img src="${user.photo_url || 'https://via.placeholder.com/50'}" alt="Profile Photo">
-                    <span>${user.first_name} ${user.last_name || ''}</span>
-                `;
-            } else {
-                document.getElementById('profile-info').textContent = 'Игрок не авторизован';
+                userName = `${user.first_name} ${user.last_name || ''}`.trim();
+                userPhoto = user.photo_url || 'https://via.placeholder.com/50';
             }
         } else {
-            document.getElementById('profile-info').textContent = 'Запуск вне Telegram';
+            console.log('Запуск вне Telegram: используется заглушка для профиля');
         }
 
-        if (!this.joinTime) {
-            this.joinTime = Date.now();
-            localStorage.setItem('joinTime', this.joinTime);
+        // Установка времени присоединения
+        if (!joinTime) {
+            joinTime = Date.now();
+            localStorage.setItem('joinTime', joinTime);
         } else {
-            this.joinTime = parseInt(localStorage.getItem('joinTime'), 10);
+            joinTime = parseInt(joinTime, 10);
         }
-        const joinDate = new Date(this.joinTime);
+        this.joinTime = joinTime;
+
+        // Обновление UI профиля
+        const profileInfo = document.getElementById('profile-info');
+        profileInfo.innerHTML = `
+            <img src="${userPhoto}" alt="Profile Photo">
+            <span>${userName}</span>
+        `;
+
+        const joinDate = new Date(joinTime);
         document.getElementById('join-time').textContent = `Присоединился: ${joinDate.toLocaleString()}`;
     }
 
@@ -274,8 +284,7 @@ class Game {
             recycling: this.recycling,
             exploreStartTime: this.exploreStartTime,
             purifyStartTime: this.purifyStartTime,
-            recycleStartTime: this.recycleStartTime,
-            joinTime: this.joinTime
+            recycleStartTime: this.recycleStartTime
         };
         localStorage.setItem('marsRebornSave', JSON.stringify(gameState));
     }
@@ -287,7 +296,6 @@ class Game {
             this.resources = gameState.resources;
             this.stamina = gameState.stamina;
             this.maxStamina = gameState.maxStamina;
-            this.joinTime = gameState.joinTime;
 
             if (gameState.exploring) {
                 this.exploring = true;
@@ -339,9 +347,6 @@ class Game {
                     this.finishRecycling();
                 }
             }
-        } else {
-            this.joinTime = Date.now();
-            localStorage.setItem('joinTime', this.joinTime);
         }
     }
 }
