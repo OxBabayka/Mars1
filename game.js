@@ -51,7 +51,7 @@ class Game {
         for (let i = 0; i < 100; i++) {
             const cell = document.createElement('div');
             cell.classList.add('map-cell');
-            if (i === 45) { // Центр для 10x10 сетки (индекс 45)
+            if (i === 45) {
                 cell.id = 'residential-module-cell';
                 cell.title = 'Жилой модуль';
             } else {
@@ -267,14 +267,9 @@ class Game {
             window.Telegram.WebApp.ready();
             const user = window.Telegram.WebApp.initDataUnsafe.user;
             if (user) {
-                console.log('Telegram user data:', user); // Для отладки
                 userName = `${user.first_name} ${user.last_name || ''}`.trim();
                 userPhoto = user.photo_url || 'https://via.placeholder.com/50';
-            } else {
-                console.log('No user data available in Telegram');
             }
-        } else {
-            console.log('Not running in Telegram Web App');
         }
 
         if (!joinTime) {
