@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mars Reborn</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="game-container">
+        <h1>Mars Reborn</h1>
+        <div id="player-profile">
+            <h2>Профиль игрока</h2>
+            <div id="profile-info"></div>
+            <div id="join-time"></div>
+            <div id="time-spent"></div>
+        </div>
+        <div id="map">
+            <div class="map-grid"></div>
+        </div>
+        <div id="resources">
+            <h2>Ресурсы</h2>
+        </div>
+        <div id="residential-module">
+            <h2>Жилой модуль</h2>
+            <div id="stamina"></div>
+            <div id="food"></div>
+            <div id="water"></div>
+            <button id="explore-button">Исследовать поверхность</button>
+            <div id="explore-timer"></div>
+            <div id="processing-buttons">
+                <button id="purify-ice-button">Очистить грязный лёд</button>
+                <button id="recycle-scrap-button">Переработать металлолом</button>
+            </div>
+            <div id="purify-timer"></div>
+            <div id="recycle-timer"></div>
+        </div>
+        <div id="notifications"></div>
+    </div>
+    <script src="game.js"></script>
+    <script src="ui.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>
