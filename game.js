@@ -15,18 +15,23 @@ class Game {
         this.exploring = false;
         this.purifying = false;
         this.recycling = false;
+        this.resting = false;
         this.exploreTime = 25;
         this.purifyTime = 7200;
         this.recycleTime = 1800;
+        this.restTime = 43200; // 12 часов
         this.exploreCost = 3;
-        this.purifyCost = 15;
-        this.recycleCost = 10;
+        this.purifyCost = { dirtyIce: 20, stamina: 15, energy: 15 };
+        this.recycleCost = { scrapMetal: 50, stamina: 10, energy: 10 };
+        this.restCost = { stamina: 15 };
         this.exploreTimer = null;
         this.purifyTimer = null;
         this.recycleTimer = null;
+        this.restTimer = null;
         this.exploreStartTime = null;
         this.purifyStartTime = null;
         this.recycleStartTime = null;
+        this.restStartTime = null;
         this.joinTime = null;
         this.timeSpentInterval = null;
     }
@@ -122,10 +127,14 @@ class Game {
     }
 
     purifyIce() {
-        if (!this.purifying && this.resources.dirtyIce >= 1 && this.resources.energy >= this.purifyCost) {
+        if (!this.purifying &&
+            this.resources.dirtyIce >= this.purifyCost.dirtyIce &&
+            this.stamina >= this.purifyCost.stamina &&
+            this.resources.energy >= this.purifyCost.energy) {
             this.purifying = true;
-            this.resources.dirtyIce -= 1;
-            this.resources.energy -= this.purifyCost;
+            this.resources.dirtyIce -= this.purifyCost.dirtyIce;
+            this.stamina -= this.purifyCost.stamina;
+            this.resources.energy -= this.purifyCost.energy;
             this.purifyStartTime = Date.now();
             this.updatePurifyTimer();
             this.purifyTimer = setInterval(() => this.updatePurifyTimer(), 1000);
@@ -140,16 +149,24 @@ class Game {
     finishPurifying() {
         this.purifying = false;
         this.purifyStartTime = null;
-        this.resources.water += 5;
+        this.resources.water += 12;
+        const sandGained = Math.floor(Math.random() * 4) + 2; // 2-5
+        const regolithGained = Math.floor(Math.random() * 4) + 2; // 2-5
+        this.resources.sand += sandGained;
+        this.resources.regolith += regolithGained;
         this.updateUI();
-        this.notify('Очистка завершена! Получено: 5 воды');
+        this.notify(`Очистка завершена!\nПолучено: 12 воды, ${sandGained} песка, ${regolithGained} реголита`);
     }
 
     recycleScrap() {
-        if (!this.recycling && this.resources.scrapMetal >= 1 && this.resources.energy >= this.recycleCost) {
+        if (!this.recycling &&
+            this.resources.scrapMetal >= this.recycleCost.scrapMetal &&
+            this.stamina >= this.recycleCost.stamina &&
+            this.resources.energy >= this.recycleCost.energy) {
             this.recycling = true;
-            this.resources.scrapMetal -= 1;
-            this.resources.energy -= this.recycleCost;
+            this.resources.scrapMetal -= this.recycleCost.scrapMetal;
+            this.stamina -= this.recycleCost.stamina;
+            this.resources.energy -= this.recycleCost.energy;
             this.recycleStartTime = Date.now();
             this.updateRecycleTimer();
             this.recycleTimer = setInterval(() => this.updateRecycleTimer(), 1000);
@@ -164,9 +181,78 @@ class Game {
     finishRecycling() {
         this.recycling = false;
         this.recycleStartTime = null;
-        this.resources.materials += 3;
+        this.resources.materials += 30;
         this.updateUI();
-        this.notify('Переработка завершена! Получено: 3 материала');
+        this.notify('Переработка завершена!\nПолучено: 30 материалов');
+    }
+
+    rest() {
+        if (!this.resting) {
+            this.resting = true;
+            this.stamina = Math.min(this.maxStamina, this.stamina + 15);
+            this.restStartTime = Date.now();
+            this.updateRestTimer();
+            this.restTimer = setInterval(() => this.updateRestTimer(), 1000);
+            setTimeout(() => {
+                clearInterval(this.restTimer);
+                this.resting = false;
+                this.notify('Отдых завершён. Выносливость восстановлена на 15.');
+            }, this.restTime * 1000);
+            this.updateUI();
+        }
+    }
+
+    updateExploreTimer() {
+        if (this.exploreStartTime) {
+            const elapsed = Math.floor((Date.now() - this.exploreStartTime) / 1000);
+            const remaining = this.exploreTime - elapsed;
+            if (remaining >= 0) {
+                document.getElementById('explore-timer').textContent = `Исследование: ${remaining} сек`;
+            } else {
+                document.getElementById('explore-timer').textContent = '';
+            }
+        }
+    }
+
+    updatePurifyTimer() {
+        if (this.purifyStartTime) {
+            const elapsed = Math.floor((Date.now() - this.purifyStartTime) / 1000);
+            const remaining = this.purifyTime - elapsed;
+            if (remaining >= 0) {
+                const progress = (elapsed / this.purifyTime) * 100;
+                document.getElementById('purify-progress').innerHTML = `<div style="width: ${progress}%"></div>`;
+            } else {
+                document.getElementById('purify-progress').innerHTML = '<div></div>';
+            }
+        }
+    }
+
+    updateRecycleTimer() {
+        if (this.recycleStartTime) {
+            const elapsed = Math.floor((Date.now() - this.recycleStartTime) / 1000);
+            const remaining = this.recycleTime - elapsed;
+            if (remaining >= 0) {
+                const progress = (elapsed / this.recycleTime) * 100;
+                document.getElementById('recycle-progress').innerHTML = `<div style="width: ${progress}%"></div>`;
+            } else {
+                document.getElementById('recycle-progress').innerHTML = '<div></div>';
+            }
+        }
+    }
+
+    updateRestTimer() {
+        if (this.restStartTime) {
+            const elapsed = Math.floor((Date.now() - this.restStartTime) / 1000);
+            const remaining = this.restTime - elapsed;
+            if (remaining >= 0) {
+                const hours = Math.floor(remaining / 3600);
+                const minutes = Math.floor((remaining % 3600) / 60);
+                const seconds = remaining % 60;
+                document.getElementById('rest-timer').textContent = `До следующего отдыха: ${hours}ч ${minutes}м ${seconds}с`;
+            } else {
+                document.getElementById('rest-timer').textContent = '';
+            }
+        }
     }
 
     tick() {
@@ -189,68 +275,31 @@ class Game {
         } else {
             this.stamina -= 10;
             if (this.stamina < 0) this.stamina = 0;
-            this.notify('Недостаток еды или воды! Выносливость уменьшается.');
+            this.notify('Недостаток еды или воды!\nВыносливость уменьшается.');
         }
         this.updateUI();
     }
 
-    updateExploreTimer() {
-        if (this.exploreStartTime) {
-            const elapsed = Math.floor((Date.now() - this.exploreStartTime) / 1000);
-            const remaining = this.exploreTime - elapsed;
-            if (remaining >= 0) {
-                document.getElementById('explore-timer').textContent = `Исследование: ${remaining} сек`;
-            } else {
-                document.getElementById('explore-timer').textContent = '';
-            }
-        }
-    }
-
-    updatePurifyTimer() {
-        if (this.purifyStartTime) {
-            const elapsed = Math.floor((Date.now() - this.purifyStartTime) / 1000);
-            const remaining = this.purifyTime - elapsed;
-            if (remaining >= 0) {
-                const hours = Math.floor(remaining / 3600);
-                const minutes = Math.floor((remaining % 3600) / 60);
-                const seconds = remaining % 60;
-                document.getElementById('purify-timer').textContent = `Очистка: ${hours}ч ${minutes}м ${seconds}с`;
-            } else {
-                document.getElementById('purify-timer').textContent = '';
-            }
-        }
-    }
-
-    updateRecycleTimer() {
-        if (this.recycleStartTime) {
-            const elapsed = Math.floor((Date.now() - this.recycleStartTime) / 1000);
-            const remaining = this.recycleTime - elapsed;
-            if (remaining >= 0) {
-                const minutes = Math.floor(remaining / 60);
-                const seconds = remaining % 60;
-                document.getElementById('recycle-timer').textContent = `Переработка: ${minutes}м ${seconds}с`;
-            } else {
-                document.getElementById('recycle-timer').textContent = '';
-            }
-        }
-    }
-
     updateUI() {
         document.getElementById('stamina').textContent = `Выносливость: ${this.stamina}/${this.maxStamina}`;
-        document.getElementById('food').textContent = `Еда: ${this.resources.food}`;
-        document.getElementById('water').textContent = `Вода: ${this.resources.water}`;
-        document.getElementById('resources').innerHTML = `
-            <h2>Ресурсы</h2>
-            <p>Энергия: ${this.resources.energy}</p>
-            <p>Материалы: ${this.resources.materials}</p>
-            <p>Металлолом: ${this.resources.scrapMetal}</p>
-            <p>Грязный лёд: ${this.resources.dirtyIce}</p>
-            <p>Реголит: ${this.resources.regolith}</p>
-            <p>Песок: ${this.resources.sand}</p>
-        `;
+        document.getElementById('resource-energy').textContent = `Энергия: ${this.resources.energy}`;
+        document.getElementById('resource-food').textContent = `Еда: ${this.resources.food}`;
+        document.getElementById('resource-water').textContent = `Вода: ${this.resources.water}`;
+        document.getElementById('resource-materials').textContent = `Материалы: ${this.resources.materials}`;
+        document.getElementById('resource-scrapMetal').textContent = `Металлолом: ${this.resources.scrapMetal}`;
+        document.getElementById('resource-dirtyIce').textContent = `Грязный лёд: ${this.resources.dirtyIce}`;
+        document.getElementById('resource-regolith').textContent = `Реголит: ${this.resources.regolith}`;
+        document.getElementById('resource-sand').textContent = `Песок: ${this.resources.sand}`;
         document.getElementById('explore-button').disabled = this.exploring || this.stamina < this.exploreCost;
-        document.getElementById('purify-ice-button').disabled = this.purifying || this.resources.dirtyIce < 1 || this.resources.energy < this.purifyCost;
-        document.getElementById('recycle-scrap-button').disabled = this.recycling || this.resources.scrapMetal < 1 || this.resources.energy < this.recycleCost;
+        document.getElementById('purify-ice-button').disabled = this.purifying || 
+            this.resources.dirtyIce < this.purifyCost.dirtyIce || 
+            this.stamina < this.purifyCost.stamina || 
+            this.resources.energy < this.purifyCost.energy;
+        document.getElementById('recycle-scrap-button').disabled = this.recycling || 
+            this.resources.scrapMetal < this.recycleCost.scrapMetal || 
+            this.stamina < this.recycleCost.stamina || 
+            this.resources.energy < this.recycleCost.energy;
+        document.getElementById('rest-button').disabled = this.resting;
     }
 
     notify(message) {
@@ -260,7 +309,7 @@ class Game {
 
     initPlayerProfile() {
         let userName = 'Неизвестный игрок';
-        let userPhoto = 'https://via.placeholder.com/50';
+        let userPhoto = 'https://via.placeholder.com/40';
         let joinTime = localStorage.getItem('joinTime');
 
         if (window.Telegram && window.Telegram.WebApp) {
@@ -268,7 +317,7 @@ class Game {
             const user = window.Telegram.WebApp.initDataUnsafe.user;
             if (user) {
                 userName = `${user.first_name} ${user.last_name || ''}`.trim();
-                userPhoto = user.photo_url || 'https://via.placeholder.com/50';
+                userPhoto = user.photo_url || 'https://via.placeholder.com/40';
             }
         }
 
@@ -307,9 +356,11 @@ class Game {
             exploring: this.exploring,
             purifying: this.purifying,
             recycling: this.recycling,
+            resting: this.resting,
             exploreStartTime: this.exploreStartTime,
             purifyStartTime: this.purifyStartTime,
-            recycleStartTime: this.recycleStartTime
+            recycleStartTime: this.recycleStartTime,
+            restStartTime: this.restStartTime
         };
         localStorage.setItem('marsRebornSave', JSON.stringify(gameState));
     }
@@ -321,6 +372,7 @@ class Game {
             this.resources = gameState.resources;
             this.stamina = gameState.stamina;
             this.maxStamina = gameState.maxStamina;
+            this.resting = gameState.resting;
 
             if (gameState.exploring) {
                 this.exploring = true;
@@ -370,6 +422,25 @@ class Game {
                     }, remaining * 1000);
                 } else {
                     this.finishRecycling();
+                }
+            }
+
+            if (gameState.resting) {
+                this.resting = true;
+                this.restStartTime = gameState.restStartTime;
+                const elapsed = Math.floor((Date.now() - this.restStartTime) / 1000);
+                const remaining = this.restTime - elapsed;
+                if (remaining > 0) {
+                    this.updateRestTimer();
+                    this.restTimer = setInterval(() => this.updateRestTimer(), 1000);
+                    setTimeout(() => {
+                        clearInterval(this.restTimer);
+                        this.resting = false;
+                        this.notify('Отдых завершён. Выносливость восстановлена на 15.');
+                    }, remaining * 1000);
+                } else {
+                    this.resting = false;
+                    this.notify('Отдых завершён. Выносливость восстановлена на 15.');
                 }
             }
         }
