@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Mars Reborn</title>
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -29,6 +30,8 @@
             <div id="resource-sand">Песок: 0</div>
             <div id="resource-scrapMetal">Металлолом: 0</div>
             <div id="resource-batteries">Батареи: 0/0 (заряженные/пустые)</div>
+            <div id="resource-corn-seeds">Семена кукурузы: 0</div>
+            <div id="resource-coffee-bunches">Кофейные гроздья: 0</div>
         </div>
 
         <!-- Жилой модуль -->
@@ -73,6 +76,40 @@
                         <p>Стоимость: 50 материалов</p>
                         <p>Эффект: +50 к максимальной энергии</p>
                         <button id="build-power-station">Построить/Улучшить</button>
+                    </div>
+                    <div>
+                        <h3>Теплица</h3>
+                        <p>Уровень: <span id="greenhouse-level">0</span></p>
+                        <p>Стоимость: 120 материалов, 25 энергии</p>
+                        <p>Эффект: Позволяет выращивать растения</p>
+                        <button id="build-greenhouse">Построить</button>
+                    </div>
+                    <div id="greenhouse-slots" style="display: none;">
+                        <h3>Ячейки теплицы</h3>
+                        <div id="slot-1">
+                            <p>Ячейка 1: <span id="slot-1-status">Пусто</span></p>
+                            <button id="grow-sprouts-1">Пророщенные зерна (15 мин, +15 еды)</button>
+                            <button id="grow-lettuce-1">Салат-латук (30 мин, +25 еды)</button>
+                            <button id="grow-potato-1">Картофель (60 мин, +35 еды)</button>
+                            <button id="grow-corn-1">Кукуруза (4 ч, +1 семя)</button>
+                            <button id="grow-coffee-1">Кофе (4 ч, +1 гроздья)</button>
+                        </div>
+                        <div id="slot-2">
+                            <p>Ячейка 2: <span id="slot-2-status">Пусто</span></p>
+                            <button id="grow-sprouts-2">Пророщенные зерна (15 мин, +15 еды)</button>
+                            <button id="grow-lettuce-2">Салат-латук (30 мин, +25 еды)</button>
+                            <button id="grow-potato-2">Картофель (60 мин, +35 еды)</button>
+                            <button id="grow-corn-2">Кукуруза (4 ч, +1 семя)</button>
+                            <button id="grow-coffee-2">Кофе (4 ч, +1 гроздья)</button>
+                        </div>
+                        <div id="slot-3">
+                            <p>Ячейка 3: <span id="slot-3-status">Пусто</span></p>
+                            <button id="grow-sprouts-3">Пророщенные зерна (15 мин, +15 еды)</button>
+                            <button id="grow-lettuce-3">Салат-латук (30 мин, +25 еды)</button>
+                            <button id="grow-potato-3">Картофель (60 мин, +35 еды)</button>
+                            <button id="grow-corn-3">Кукуруза (4 ч, +1 семя)</button>
+                            <button id="grow-coffee-3">Кофе (4 ч, +1 гроздья)</button>
+                        </div>
                     </div>
                 </div>
                 <button id="close-modal">Закрыть</button>

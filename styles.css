@@ -50,6 +50,7 @@ h1 {
     text-align: center;
     color: #00d4ff;
     text-shadow: 0 0 5px #00d4ff;
+    -webkit-animation: glow 2s infinite alternate;
     animation: glow 2s infinite alternate;
     margin: 0;
 }
@@ -73,6 +74,7 @@ h2, h3 {
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    -webkit-transition: background-color 0.3s, box-shadow 0.2s;
     transition: background-color 0.3s, box-shadow 0.2s;
 }
 
@@ -155,7 +157,33 @@ h2, h3 {
     background-color: #5f9ea0;
 }
 
+@-webkit-keyframes glow {
+    from { text-shadow: 0 0 5px #00d4ff; }
+    to { text-shadow: 0 0 10px #00d4ff; }
+}
+
 @keyframes glow {
     from { text-shadow: 0 0 5px #00d4ff; }
     to { text-shadow: 0 0 10px #00d4ff; }
+}
+
+/* Медиа-запросы для мобильных устройств */
+@media (max-width: 600px) {
+    #game-container {
+        padding: 10px;
+    }
+    h1 {
+        font-size: 24px;
+    }
+    h2, h3 {
+        font-size: 18px;
+    }
+    #actions button {
+        padding: 8px;
+        font-size: 14px;
+    }
+    .map-cell {
+        width: 25px;
+        height: 25px;
+    }
 }

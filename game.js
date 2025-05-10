@@ -11,14 +11,17 @@ class Game {
             regolith: 0,
             sand: 0,
             scrapMetal: 0,
-            batteries: { charged: 0, empty: 5 } // 5 пустых батарей
+            batteries: { charged: 0, empty: 5 },
+            cornSeeds: 0,
+            coffeeBunches: 0
         };
         this.stamina = 100;
         this.maxStamina = 100;
 
         // Здания
         this.buildings = {
-            powerStation: { level: 0 }
+            powerStation: { level: 0 },
+            greenhouse: { level: 0 }
         };
 
         // Состояния действий
@@ -28,6 +31,13 @@ class Game {
         this.charging = false;
         this.resting = false;
 
+        // Ячейки теплицы
+        this.greenhouseSlots = [
+            { plant: null, startTime: null, timer: null },
+            { plant: null, startTime: null, timer: null },
+            { plant: null, startTime: null, timer: null }
+        ];
+
         // Время действий (в секундах)
         this.exploreTime = 25;      // 25 секунд
         this.purifyTime = 7200;     // 2 часа
@@ -36,11 +46,20 @@ class Game {
         this.restCooldown = 86400;  // 24 часа
 
         // Затраты и параметры
-        this.exploreCost = 1;       // 1 стамина
+        this.exploreCost = 1;
         this.purifyCost = { ice: 20, stamina: 15, energy: 15 };
         this.recycleCost = { scrapMetal: 50, stamina: 10, energy: 10 };
-        this.dischargeGain = 10;    // Разрядка даёт 10 энергии
-        this.batteryBreakChance = 0.07; // 7% шанс поломки
+        this.dischargeGain = 10;
+        this.batteryBreakChance = 0.07;
+
+        // Параметры растений
+        this.plants = {
+            sprouts: { time: 15 * 60, stamina: 1, energy: 5, water: 10, foodGain: 15 },
+            lettuce: { time: 30 * 60, stamina: 3, energy: 7, water: 15, foodGain: 25 },
+            potato: { time: 60 * 60, stamina: 5, energy: 15, water: 25, foodGain: 35 },
+            corn: { time: 4 * 3600, stamina: 10, energy: 30, water: 15, cornGain: 1 },
+            coffee: { time: 4 * 3600, stamina: 5, energy: 30, water: 30, coffeeGain: 1 }
+        };
 
         // Таймеры и время начала действий
         this.exploreTimer = null;
@@ -59,23 +78,25 @@ class Game {
         this.timeSpentInterval = null;
     }
 
-    // Запуск игры
     start() {
         console.log('Игра запущена');
         this.loadGame();
         this.createMap();
         this.updateUI();
-        setInterval(() => this.tick(), 1000);              // Обновление каждую секунду
-        setInterval(() => this.regenStamina(), 300000);    // Регенерация стамины каждые 5 минут
-        setInterval(() => this.saveGame(), 5000);          // Сохранение каждые 5 секунд
+        setInterval(() => this.tick(), 1000);
+        setInterval(() => this.regenStamina(), 300000);
+        setInterval(() => this.saveGame(), 5000);
         this.initPlayerProfile();
         this.updateTimeSpent();
         this.timeSpentInterval = setInterval(() => this.updateTimeSpent(), 1000);
     }
 
-    // Создание карты (10x10)
     createMap() {
         const mapGrid = document.querySelector('.map-grid');
+        if (!mapGrid) {
+            console.error('Элемент .map-grid не найден');
+            return;
+        }
         mapGrid.innerHTML = '';
         for (let i = 0; i < 100; i++) {
             const cell = document.createElement('div');
@@ -90,7 +111,6 @@ class Game {
         }
     }
 
-    // Исследование окрестностей
     exploreCell(index) {
         if (!this.exploring && this.stamina >= this.exploreCost) {
             this.exploring = true;
@@ -124,14 +144,13 @@ class Game {
 
     generateResources() {
         return {
-            ice: Math.floor(Math.random() * 6),           // 0-5
-            regolith: Math.floor(Math.random() * 6),      // 0-5
-            sand: Math.floor(Math.random() * 6),          // 0-5
-            scrapMetal: Math.floor(Math.random() * 6)     // 0-5
+            ice: Math.floor(Math.random() * 6),
+            regolith: Math.floor(Math.random() * 6),
+            sand: Math.floor(Math.random() * 6),
+            scrapMetal: Math.floor(Math.random() * 6)
         };
     }
 
-    // Очистка льда
     purifyIce() {
         if (!this.purifying &&
             this.resources.ice >= this.purifyCost.ice &&
@@ -156,15 +175,14 @@ class Game {
         this.purifying = false;
         this.purifyStartTime = null;
         this.resources.water += 12;
-        const sandGained = Math.floor(Math.random() * 4) + 2; // 2-5
-        const regolithGained = Math.floor(Math.random() * 4) + 2; // 2-5
+        const sandGained = Math.floor(Math.random() * 4) + 2;
+        const regolithGained = Math.floor(Math.random() * 4) + 2;
         this.resources.sand += sandGained;
         this.resources.regolith += regolithGained;
         this.updateUI();
         this.notify(`Очистка завершена!\nПолучено: Вода: 12, Песок: ${sandGained}, Реголит: ${regolithGained}`);
     }
 
-    // Переработка металлолома
     recycleScrap() {
         if (!this.recycling &&
             this.resources.scrapMetal >= this.recycleCost.scrapMetal &&
@@ -193,7 +211,6 @@ class Game {
         this.notify('Переработка завершена!\nПолучено: Материалы: 30');
     }
 
-    // Зарядка батареи
     chargeBattery() {
         if (!this.charging && this.resources.batteries.empty > 0) {
             this.charging = true;
@@ -217,7 +234,6 @@ class Game {
         this.notify('Батарея заряжена!');
     }
 
-    // Разрядка батареи
     dischargeBattery() {
         if (this.resources.batteries.charged > 0) {
             this.resources.batteries.charged -= 1;
@@ -231,27 +247,19 @@ class Game {
         }
     }
 
-    // Отдых
     rest() {
         const now = Date.now();
         if (!this.lastRestTime || (now - this.lastRestTime) >= this.restCooldown * 1000) {
             this.stamina = Math.min(this.maxStamina, this.stamina + 15);
             this.lastRestTime = now;
-            this.resting = true;
             this.updateRestTimer();
-            this.restTimer = setInterval(() => this.updateRestTimer(), 1000);
-            setTimeout(() => {
-                clearInterval(this.restTimer);
-                this.resting = false;
-                this.notify('Отдых завершён. Выносливость восстановлена на 15.');
-            }, 1000); // Уведомление через 1 секунду
+            this.notify('Отдых завершен. Стамина восстановлена на 15.');
             this.updateUI();
         } else {
-            this.notify('Отдых пока недоступен. Дождитесь окончания кулдауна.');
+            this.notify('Отдых недоступен. Подождите до окончания кулдауна.');
         }
     }
 
-    // Строительство/улучшение зданий
     buildPowerStation() {
         const cost = 50;
         if (this.resources.materials >= cost) {
@@ -268,12 +276,104 @@ class Game {
         }
     }
 
-    // Обновление каждую секунду
+    buildGreenhouse() {
+        const materialCost = 120;
+        const energyCost = 25;
+        if (this.buildings.greenhouse.level === 0 &&
+            this.resources.materials >= materialCost &&
+            this.resources.energy >= energyCost) {
+            this.resources.materials -= materialCost;
+            this.resources.energy -= energyCost;
+            this.buildings.greenhouse.level = 1;
+            this.updateUI();
+            this.notify('Теплица построена! Теперь вы можете выращивать растения.');
+            const slotsElement = document.getElementById('greenhouse-slots');
+            if (slotsElement) {
+                slotsElement.style.display = 'block';
+            }
+        } else {
+            this.notify('Недостаточно ресурсов или теплица уже построена!');
+        }
+    }
+
+    growPlant(slotIndex, plantType) {
+        if (this.buildings.greenhouse.level === 0) {
+            this.notify('Сначала постройте теплицу!');
+            return;
+        }
+        const slot = this.greenhouseSlots[slotIndex];
+        if (slot.plant) {
+            this.notify(`Ячейка ${slotIndex + 1} занята! Дождитесь завершения роста.`);
+            return;
+        }
+        const plant = this.plants[plantType];
+        if (this.stamina >= plant.stamina &&
+            this.resources.energy >= plant.energy &&
+            this.resources.water >= plant.water) {
+            this.stamina -= plant.stamina;
+            this.resources.energy -= plant.energy;
+            this.resources.water -= plant.water;
+            slot.plant = plantType;
+            slot.startTime = Date.now();
+            slot.timer = setInterval(() => this.updateSlotTimer(slotIndex), 1000);
+            setTimeout(() => {
+                clearInterval(slot.timer);
+                this.finishGrowing(slotIndex);
+            }, plant.time * 1000);
+            this.updateUI();
+        } else {
+            this.notify('Недостаточно ресурсов для выращивания растения!');
+        }
+    }
+
+    finishGrowing(slotIndex) {
+        const slot = this.greenhouseSlots[slotIndex];
+        const plantType = slot.plant;
+        if (plantType === 'sprouts') {
+            this.resources.food += this.plants.sprouts.foodGain;
+            this.notify(`Пророщенные зерна созрели! Получено: ${this.plants.sprouts.foodGain} еды.`);
+        } else if (plantType === 'lettuce') {
+            this.resources.food += this.plants.lettuce.foodGain;
+            this.notify(`Салат-латук созрел! Получено: ${this.plants.lettuce.foodGain} еды.`);
+        } else if (plantType === 'potato') {
+            this.resources.food += this.plants.potato.foodGain;
+            this.notify(`Картофель созрел! Получено: ${this.plants.potato.foodGain} еды.`);
+        } else if (plantType === 'corn') {
+            this.resources.cornSeeds += this.plants.corn.cornGain;
+            this.notify(`Кукуруза созрела! Получено: ${this.plants.corn.cornGain} семян кукурузы.`);
+        } else if (plantType === 'coffee') {
+            this.resources.coffeeBunches += this.plants.coffee.coffeeGain;
+            this.notify(`Кофе созрел! Получено: ${this.plants.coffee.coffeeGain} кофейных гроздьев.`);
+        }
+        slot.plant = null;
+        slot.startTime = null;
+        slot.timer = null;
+        this.updateUI();
+    }
+
+    updateSlotTimer(slotIndex) {
+        const slot = this.greenhouseSlots[slotIndex];
+        if (slot.startTime) {
+            const elapsed = Math.floor((Date.now() - slot.startTime) / 1000);
+            const remaining = this.plants[slot.plant].time - elapsed;
+            const statusElement = document.getElementById(`slot-${slotIndex + 1}-status`);
+            if (statusElement) {
+                if (remaining > 0) {
+                    const hours = Math.floor(remaining / 3600);
+                    const minutes = Math.floor((remaining % 3600) / 60);
+                    const seconds = remaining % 60;
+                    statusElement.textContent = `Растёт (${hours}ч ${minutes}м ${seconds}с)`;
+                } else {
+                    statusElement.textContent = 'Пусто';
+                }
+            }
+        }
+    }
+
     tick() {
         this.updateUI();
     }
 
-    // Регенерация стамины
     regenStamina() {
         if (this.resources.food >= 0.5 && this.resources.water >= 0.5 && this.stamina < this.maxStamina) {
             this.stamina += 1;
@@ -284,113 +384,191 @@ class Game {
         }
     }
 
-    // Обновление таймера исследования
     updateExploreTimer() {
         if (this.exploreStartTime) {
             const elapsed = Math.floor((Date.now() - this.exploreStartTime) / 1000);
             const remaining = this.exploreTime - elapsed;
-            if (remaining >= 0) {
-                document.getElementById('explore-progress').textContent = `Исследование: ${remaining} сек`;
-            } else {
-                document.getElementById('explore-progress').textContent = '';
+            const progressElement = document.getElementById('explore-progress');
+            if (progressElement) {
+                if (remaining >= 0) {
+                    progressElement.textContent = `Исследование: ${remaining} сек`;
+                } else {
+                    progressElement.textContent = '';
+                }
             }
         }
     }
 
-    // Обновление таймера очистки льда
     updatePurifyTimer() {
         if (this.purifyStartTime) {
             const elapsed = Math.floor((Date.now() - this.purifyStartTime) / 1000);
             const remaining = this.purifyTime - elapsed;
-            if (remaining >= 0) {
-                document.getElementById('purify-progress').textContent = `Очистка: ${Math.floor(remaining / 3600)} ч ${Math.floor((remaining % 3600) / 60)} мин`;
-            } else {
-                document.getElementById('purify-progress').textContent = '';
+            const progressElement = document.getElementById('purify-progress');
+            if (progressElement) {
+                if (remaining >= 0) {
+                    progressElement.textContent = `Очистка: ${Math.floor(remaining / 3600)} ч ${Math.floor((remaining % 3600) / 60)} мин`;
+                } else {
+                    progressElement.textContent = '';
+                }
             }
         }
     }
 
-    // Обновление таймера переработки
     updateRecycleTimer() {
         if (this.recycleStartTime) {
             const elapsed = Math.floor((Date.now() - this.recycleStartTime) / 1000);
             const remaining = this.recycleTime - elapsed;
-            if (remaining >= 0) {
-                document.getElementById('recycle-progress').textContent = `Переработка: ${Math.floor(remaining / 60)} мин`;
-            } else {
-                document.getElementById('recycle-progress').textContent = '';
+            const progressElement = document.getElementById('recycle-progress');
+            if (progressElement) {
+                if (remaining >= 0) {
+                    progressElement.textContent = `Переработка: ${Math.floor(remaining / 60)} мин`;
+                } else {
+                    progressElement.textContent = '';
+                }
             }
         }
     }
 
-    // Обновление таймера зарядки
     updateChargeTimer() {
         if (this.chargeStartTime) {
             const elapsed = Math.floor((Date.now() - this.chargeStartTime) / 1000);
             const remaining = this.chargeTime - elapsed;
-            if (remaining >= 0) {
-                document.getElementById('charge-progress').textContent = `Зарядка: ${Math.floor(remaining / 3600)} ч ${Math.floor((remaining % 3600) / 60)} мин`;
-            } else {
-                document.getElementById('charge-progress').textContent = '';
+            const progressElement = document.getElementById('charge-progress');
+            if (progressElement) {
+                if (remaining >= 0) {
+                    progressElement.textContent = `Зарядка: ${Math.floor(remaining / 3600)} ч ${Math.floor((remaining % 3600) / 60)} мин`;
+                } else {
+                    progressElement.textContent = '';
+                }
             }
         }
     }
 
-    // Обновление таймера отдыха
     updateRestTimer() {
         if (this.lastRestTime) {
             const elapsed = Math.floor((Date.now() - this.lastRestTime) / 1000);
             const remaining = this.restCooldown - elapsed;
-            if (remaining > 0) {
-                const hours = Math.floor(remaining / 3600);
-                const minutes = Math.floor((remaining % 3600) / 60);
-                const seconds = remaining % 60;
-                document.getElementById('rest-timer').textContent = `До следующего отдыха: ${hours}ч ${minutes}м ${seconds}с`;
-            } else {
-                document.getElementById('rest-timer').textContent = 'Отдых доступен';
+            const timerElement = document.getElementById('rest-timer');
+            if (timerElement) {
+                if (remaining > 0) {
+                    const hours = Math.floor(remaining / 3600);
+                    const minutes = Math.floor((remaining % 3600) / 60);
+                    const seconds = remaining % 60;
+                    timerElement.textContent = `До следующего отдыха: ${hours}ч ${minutes}м ${seconds}с`;
+                } else {
+                    timerElement.textContent = 'Отдых доступен';
+                }
             }
         } else {
-            document.getElementById('rest-timer').textContent = 'Отдых доступен';
+            const timerElement = document.getElementById('rest-timer');
+            if (timerElement) {
+                timerElement.textContent = 'Отдых доступен';
+            }
         }
     }
 
-    // Обновление интерфейса
     updateUI() {
-        document.getElementById('stamina').textContent = `Стамина: ${this.stamina}/${this.maxStamina}`;
-        document.getElementById('resource-energy').textContent = `Энергия: ${this.resources.energy}/${this.resources.maxEnergy}`;
-        document.getElementById('resource-food').textContent = `Еда: ${this.resources.food.toFixed(1)}`;
-        document.getElementById('resource-water').textContent = `Вода: ${this.resources.water.toFixed(1)}`;
-        document.getElementById('resource-materials').textContent = `Материалы: ${this.resources.materials}`;
-        document.getElementById('resource-ice').textContent = `Лёд: ${this.resources.ice}`;
-        document.getElementById('resource-regolith').textContent = `Реголит: ${this.resources.regolith}`;
-        document.getElementById('resource-sand').textContent = `Песок: ${this.resources.sand}`;
-        document.getElementById('resource-scrapMetal').textContent = `Металлолом: ${this.resources.scrapMetal}`;
-        document.getElementById('resource-batteries').textContent = `Батареи: ${this.resources.batteries.charged} заряженных, ${this.resources.batteries.empty} пустых`;
+        const elements = {
+            stamina: document.getElementById('stamina'),
+            energy: document.getElementById('resource-energy'),
+            food: document.getElementById('resource-food'),
+            water: document.getElementById('resource-water'),
+            materials: document.getElementById('resource-materials'),
+            ice: document.getElementById('resource-ice'),
+            regolith: document.getElementById('resource-regolith'),
+            sand: document.getElementById('resource-sand'),
+            scrapMetal: document.getElementById('resource-scrapMetal'),
+            batteries: document.getElementById('resource-batteries'),
+            cornSeeds: document.getElementById('resource-corn-seeds'),
+            coffeeBunches: document.getElementById('resource-coffee-bunches'),
+            exploreButton: document.getElementById('explore-button'),
+            purifyButton: document.getElementById('purify-ice-button'),
+            recycleButton: document.getElementById('recycle-scrap-button'),
+            chargeButton: document.getElementById('charge-battery-button'),
+            dischargeButton: document.getElementById('discharge-battery-button'),
+            restButton: document.getElementById('rest-button'),
+            powerStationLevel: document.getElementById('power-station-level'),
+            greenhouseLevel: document.getElementById('greenhouse-level')
+        };
 
-        document.getElementById('explore-button').disabled = this.exploring || this.stamina < this.exploreCost;
-        document.getElementById('purify-ice-button').disabled = this.purifying || 
-            this.resources.ice < this.purifyCost.ice || 
-            this.stamina < this.purifyCost.stamina || 
-            this.resources.energy < this.purifyCost.energy;
-        document.getElementById('recycle-scrap-button').disabled = this.recycling || 
-            this.resources.scrapMetal < this.recycleCost.scrapMetal || 
-            this.stamina < this.recycleCost.stamina || 
-            this.resources.energy < this.recycleCost.energy;
-        document.getElementById('charge-battery-button').disabled = this.charging || this.resources.batteries.empty <= 0;
-        document.getElementById('discharge-battery-button').disabled = this.resources.batteries.charged <= 0;
-        document.getElementById('rest-button').disabled = this.resting || (this.lastRestTime && (Date.now() - this.lastRestTime) < this.restCooldown * 1000);
+        if (elements.stamina) {
+            elements.stamina.textContent = `Стамина: ${this.stamina}/${this.maxStamina}`;
+        }
+        if (elements.energy) {
+            elements.energy.textContent = `Энергия: ${Math.max(0, this.resources.energy)}/${this.resources.maxEnergy}`;
+        }
+        if (elements.food) {
+            elements.food.textContent = `Еда: ${Math.max(0, this.resources.food.toFixed(1))}`;
+        }
+        if (elements.water) {
+            elements.water.textContent = `Вода: ${Math.max(0, this.resources.water.toFixed(1))}`;
+        }
+        if (elements.materials) {
+            elements.materials.textContent = `Материалы: ${Math.max(0, this.resources.materials)}`;
+        }
+        if (elements.ice) {
+            elements.ice.textContent = `Лёд: ${Math.max(0, this.resources.ice)}`;
+        }
+        if (elements.regolith) {
+            elements.regolith.textContent = `Реголит: ${Math.max(0, this.resources.regolith)}`;
+        }
+        if (elements.sand) {
+            elements.sand.textContent = `Песок: ${Math.max(0, this.resources.sand)}`;
+        }
+        if (elements.scrapMetal) {
+            elements.scrapMetal.textContent = `Металлолом: ${Math.max(0, this.resources.scrapMetal)}`;
+        }
+        if (elements.batteries) {
+            elements.batteries.textContent = `Батареи: ${Math.max(0, this.resources.batteries.charged)} заряженных, ${Math.max(0, this.resources.batteries.empty)} пустых`;
+        }
+        if (elements.cornSeeds) {
+            elements.cornSeeds.textContent = `Семена кукурузы: ${Math.max(0, this.resources.cornSeeds)}`;
+        }
+        if (elements.coffeeBunches) {
+            elements.coffeeBunches.textContent = `Кофейные гроздья: ${Math.max(0, this.resources.coffeeBunches)}`;
+        }
 
-        // Обновление модального окна
-        document.getElementById('power-station-level').textContent = this.buildings.powerStation.level;
+        if (elements.exploreButton) {
+            elements.exploreButton.disabled = this.exploring || this.stamina < this.exploreCost;
+        }
+        if (elements.purifyButton) {
+            elements.purifyButton.disabled = this.purifying || 
+                this.resources.ice < this.purifyCost.ice || 
+                this.stamina < this.purifyCost.stamina || 
+                this.resources.energy < this.purifyCost.energy;
+        }
+        if (elements.recycleButton) {
+            elements.recycleButton.disabled = this.recycling || 
+                this.resources.scrapMetal < this.recycleCost.scrapMetal || 
+                this.stamina < this.recycleCost.stamina || 
+                this.resources.energy < this.recycleCost.energy;
+        }
+        if (elements.chargeButton) {
+            elements.chargeButton.disabled = this.charging || this.resources.batteries.empty <= 0;
+        }
+        if (elements.dischargeButton) {
+            elements.dischargeButton.disabled = this.resources.batteries.charged <= 0;
+        }
+        if (elements.restButton) {
+            elements.restButton.disabled = this.resting || (this.lastRestTime && (Date.now() - this.lastRestTime) < this.restCooldown * 1000);
+        }
+        if (elements.powerStationLevel) {
+            elements.powerStationLevel.textContent = this.buildings.powerStation.level;
+        }
+        if (elements.greenhouseLevel) {
+            elements.greenhouseLevel.textContent = this.buildings.greenhouse.level;
+        }
     }
 
-    // Уведомления
     notify(message) {
         const notifications = document.getElementById('notifications');
-        notifications.textContent = message;
+        if (notifications) {
+            notifications.textContent = message;
+        } else {
+            console.error('Элемент #notifications не найден');
+        }
     }
 
-    // Инициализация профиля игрока через Telegram
     initPlayerProfile() {
         let userName = 'Неизвестный игрок';
         let userPhoto = 'https://via.placeholder.com/40';
@@ -414,26 +592,38 @@ class Game {
         this.joinTime = joinTime;
 
         const profileInfo = document.getElementById('profile-info');
-        profileInfo.innerHTML = `
-            <img src="${userPhoto}" alt="Profile Photo">
-            <span>${userName}</span>
-        `;
+        if (profileInfo) {
+            profileInfo.innerHTML = `
+                <img src="${userPhoto}" alt="Profile Photo">
+                <span>${userName}</span>
+            `;
+        } else {
+            console.error('Элемент #profile-info не найден');
+        }
 
         const joinDate = new Date(joinTime);
-        document.getElementById('join-time').textContent = `Присоединился: ${joinDate.toLocaleString()}`;
+        const joinTimeElement = document.getElementById('join-time');
+        if (joinTimeElement) {
+            joinTimeElement.textContent = `Присоединился: ${joinDate.toLocaleString()}`;
+        } else {
+            console.error('Элемент #join-time не найден');
+        }
     }
 
-    // Обновление времени в игре
     updateTimeSpent() {
         const now = Date.now();
         const timeSpent = Math.floor((now - this.joinTime) / 1000);
         const hours = Math.floor(timeSpent / 3600);
         const minutes = Math.floor((timeSpent % 3600) / 60);
         const seconds = timeSpent % 60;
-        document.getElementById('time-spent').textContent = `Время в игре: ${hours}ч ${minutes}м ${seconds}с`;
+        const timeSpentElement = document.getElementById('time-spent');
+        if (timeSpentElement) {
+            timeSpentElement.textContent = `Время в игре: ${hours}ч ${minutes}м ${seconds}с`;
+        } else {
+            console.error('Элемент #time-spent не найден');
+        }
     }
 
-    // Сохранение прогресса
     saveGame() {
         const gameState = {
             resources: this.resources,
@@ -445,6 +635,10 @@ class Game {
             recycling: this.recycling,
             charging: this.charging,
             resting: this.resting,
+            greenhouseSlots: this.greenhouseSlots.map(slot => ({
+                plant: slot.plant,
+                startTime: slot.startTime
+            })),
             exploreStartTime: this.exploreStartTime,
             purifyStartTime: this.purifyStartTime,
             recycleStartTime: this.recycleStartTime,
@@ -454,7 +648,6 @@ class Game {
         localStorage.setItem('marsRebornSave', JSON.stringify(gameState));
     }
 
-    // Загрузка прогресса
     loadGame() {
         const savedState = localStorage.getItem('marsRebornSave');
         if (savedState) {
@@ -462,7 +655,7 @@ class Game {
             this.resources = gameState.resources;
             this.stamina = gameState.stamina;
             this.maxStamina = gameState.maxStamina;
-            this.buildings = gameState.buildings || { powerStation: { level: 0 } };
+            this.buildings = gameState.buildings || { powerStation: { level: 0 }, greenhouse: { level: 0 } };
 
             if (gameState.exploring) {
                 this.exploring = true;
@@ -537,6 +730,34 @@ class Game {
                 this.resting = true;
                 this.updateRestTimer();
                 this.restTimer = setInterval(() => this.updateRestTimer(), 1000);
+            }
+
+            if (gameState.greenhouseSlots) {
+                gameState.greenhouseSlots.forEach((slotData, index) => {
+                    if (slotData.plant && slotData.startTime) {
+                        const plant = slotData.plant;
+                        const elapsed = Math.floor((Date.now() - slotData.startTime) / 1000);
+                        const remaining = this.plants[plant].time - elapsed;
+                        if (remaining > 0) {
+                            this.greenhouseSlots[index].plant = plant;
+                            this.greenhouseSlots[index].startTime = slotData.startTime;
+                            this.greenhouseSlots[index].timer = setInterval(() => this.updateSlotTimer(index), 1000);
+                            setTimeout(() => {
+                                clearInterval(this.greenhouseSlots[index].timer);
+                                this.finishGrowing(index);
+                            }, remaining * 1000);
+                        } else {
+                            this.finishGrowing(index);
+                        }
+                    }
+                });
+            }
+
+            if (this.buildings.greenhouse.level > 0) {
+                const slotsElement = document.getElementById('greenhouse-slots');
+                if (slotsElement) {
+                    slotsElement.style.display = 'block';
+                }
             }
         }
     }
